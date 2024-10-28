@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/tabs/tab_information.dart';
 
 class ScreenHome extends StatefulWidget {
   const ScreenHome({super.key});
@@ -12,7 +13,7 @@ class _ScreenHomeState extends State<ScreenHome> {
 
   // Lista de widgets para las diferentes pestañas
   final List<Widget> _widgetOptions = <Widget>[
-    const Center(child: Text('Automóvil')),
+    const TabInformation(),
     const Center(child: Text('Transporte')),
     const Center(child: Text('Bicicleta')),
   ];
@@ -25,7 +26,13 @@ class _ScreenHomeState extends State<ScreenHome> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Bottom Navigation Demo'),
+        title: const Text('CBapp'),
+        actions: [
+          IconButton(onPressed: (){}, icon: const Icon(Icons.search)),
+          IconButton(onPressed: (){}, icon: const Icon(Icons.notifications_none_outlined)),
+          IconButton(onPressed: (){}, icon: const Icon(Icons.settings)),
+
+        ],
       ),
       body: Center(
         child: _widgetOptions.elementAt(_selectedIndex), // Muestra el widget según el índice seleccionado
@@ -33,8 +40,8 @@ class _ScreenHomeState extends State<ScreenHome> {
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
-            icon: Icon(Icons.directions_car),
-            label: 'Automóvil',
+            icon: Icon(Icons.person_pin),
+            label: 'Information',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.directions_transit),
