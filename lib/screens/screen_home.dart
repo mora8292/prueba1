@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/tabs/tab_information.dart';
+import 'package:flutter_application_1/tabs/tab_news.dart';
 
 class ScreenHome extends StatefulWidget {
   const ScreenHome({super.key});
@@ -14,7 +15,7 @@ class _ScreenHomeState extends State<ScreenHome> {
   // Lista de widgets para las diferentes pestañas
   final List<Widget> _widgetOptions = <Widget>[
     const TabInformation(),
-    const Center(child: Text('Transporte')),
+    const TabNews(),
     const Center(child: Text('Bicicleta')),
   ];
 
@@ -44,8 +45,8 @@ class _ScreenHomeState extends State<ScreenHome> {
             label: 'Information',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.directions_transit),
-            label: 'Transporte',
+            icon: Icon(Icons.newspaper_rounded),
+            label: 'News',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.directions_bike),
