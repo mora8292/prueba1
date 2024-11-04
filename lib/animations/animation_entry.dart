@@ -1,5 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/screens/screen_home.dart';
+import 'package:flutter_application_1/services/firebase_service.dart';
 
 class AnimationEntry extends StatefulWidget {
   const AnimationEntry({super.key});
@@ -8,7 +10,8 @@ class AnimationEntry extends StatefulWidget {
   _AnimationEntryState createState() => _AnimationEntryState();
 }
 
-class _AnimationEntryState extends State<AnimationEntry> with SingleTickerProviderStateMixin {
+class _AnimationEntryState extends State<AnimationEntry>
+    with SingleTickerProviderStateMixin {
   bool _isVisible = true;
 
   @override
@@ -31,6 +34,8 @@ class _AnimationEntryState extends State<AnimationEntry> with SingleTickerProvid
   Widget build(BuildContext context) {
     final double screenHeight = MediaQuery.of(context).size.height;
     final double screenWidth = MediaQuery.of(context).size.width;
+    final user = FirebaseAuth.instance.currentUser;
+    final String? email = user?.email;
 
     return Scaffold(
       body: Padding(
@@ -62,9 +67,31 @@ class _AnimationEntryState extends State<AnimationEntry> with SingleTickerProvid
                     ),
                     ShakeTransition(
                       offset: screenHeight * 0.1,
-                      child: Text(
-                        'Bienvenido',
-                        style: TextStyle(fontSize: screenWidth * 0.05, fontWeight: FontWeight.bold),
+                      child: FutureBuilder(
+                        future: getInformation(email!),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return const Center(
+                                child: CircularProgressIndicator());
+                          } else {
+                            if (snapshot.hasData) {
+                              final data =
+                                  snapshot.data as Map<String, dynamic>;
+                              return Center(
+                                child: Text(
+                                  'Bienvenido \n${data['name']}',
+                                  style: TextStyle(
+                                    fontSize: screenWidth * 0.05,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              );
+                            } else {
+                              return const Text('Error al cargar la información');
+                            }
+                          }
+                        },
                       ),
                     ),
                   ],
@@ -73,7 +100,9 @@ class _AnimationEntryState extends State<AnimationEntry> with SingleTickerProvid
               const Spacer(),
               Text(
                 'CBAPP',
-                style: TextStyle(fontSize: screenWidth * 0.05,),
+                style: TextStyle(
+                  fontSize: screenWidth * 0.05,
+                ),
               ),
             ],
           ),
@@ -144,4 +173,3 @@ class Rotation3DTransition extends StatelessWidget {
     );
   }
 }
-
