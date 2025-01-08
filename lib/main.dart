@@ -4,15 +4,22 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_application_1/animations/animation_entry.dart';
 import 'package:flutter_application_1/screens/screen_login.dart';
 import 'package:flutter_application_1/screens/screen_home.dart';
+import 'package:flutter_application_1/services/firebase_api.dart';
 import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+    await FirebaseApi().initNotifications();
+  } catch (e) {
+    print('Error al inicializar Firebase: $e');
+  }
   runApp(const MyApp());
 }
+
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -20,6 +27,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      initialRoute: '/',
+      routes: {
+        '/ScreenLogin': (context) =>
+            const ScreenLogin(), // Define aquí tu pantalla de inicio de sesión
+      },
       debugShowCheckedModeBanner: false,
       home: StreamBuilder<User?>(
         // Escuchar los cambios en el estado de autenticación

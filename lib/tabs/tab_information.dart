@@ -1,11 +1,12 @@
+import 'package:flutter_application_1/components/user_tile.dart';
+import 'package:flutter_application_1/screens/screen_chat.dart';
+import 'package:flutter_application_1/services/chat_service.dart';
+import 'package:flutter_application_1/services/firebase_service.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
-import 'package:dio/dio.dart';
-
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/services/firebase_service.dart';
-import 'package:flutter_application_1/widgets/pdf_preview_screen.dart';
 
 class TabInformation extends StatefulWidget {
   const TabInformation({super.key});
@@ -17,13 +18,11 @@ class TabInformation extends StatefulWidget {
 class _TabInformationState extends State<TabInformation>
     with TickerProviderStateMixin {
   late TabController _secondaryTabController;
+  final ChatService _chatService = ChatService();
+    final FirebaseAuth _auth = FirebaseAuth.instance;
+  
 
-  // Lista de imágenes de chat
-  final List<String> chatImages = [
-    'image/image.png',
-    'image/image.png',
-    'image/image.png',
-  ];
+ 
 
   @override
   void initState() {
@@ -122,29 +121,32 @@ class _TabInformationState extends State<TabInformation>
                           ),
                           const SizedBox(height: 10),
                           Expanded(
-                          child: ListView.builder(
-                            shrinkWrap: true,
-                            itemCount: data['docs'].length,
-                            itemBuilder: (context, index) {
-                              return ListTile(
-                                title: Text(
-                                  data['docs'][index],
-                                  style: const TextStyle(
-                                      fontSize: 18, fontWeight: FontWeight.bold),
-                                ),
-                              );
-                            },
-                          ),
+                            child: ListView.builder(
+                              shrinkWrap: true,
+                              itemCount: data['docs'].length,
+                              itemBuilder: (context, index) {
+                                final fileUrl = data['docs'][index];
+                                return ListTile(
+                                  title: Text(
+                                    fileUrl
+                                        .split('/')
+                                        .last, // Mostrar solo el nombre del archivo
+                                    style: const TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                  leading: _buildFilePreview(
+                                      fileUrl), // Mostrar icono o imagen
+                                  onTap: () => _downloadOrOpenFile(
+                                      fileUrl), // Descargar o abrir archivo
+                                );
+                              },
+                            ),
                           ),
                         ],
                       ),
                       // Sección de Chats
-                      SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          children: _buildChatButtons(),
-                        ),
-                      ),
+                     _buildUserList()
                     ],
                   ),
                 ),
@@ -158,13 +160,15 @@ class _TabInformationState extends State<TabInformation>
     );
   }
 
-  Future<String> downloadFile(String url) async {
+  Future<String> downloadFile(String gsUrl) async {
     try {
       var dir = await getApplicationDocumentsDirectory();
       // Extrae el nombre del archivo de la URL
-      String fileName = url.split('/').last;
+      String fileName = gsUrl.split('/').last;
       File file = File('${dir.path}/$fileName'); // Usar el nombre extraído
-      await Dio().download(url, file.path);
+      // Obtener referencia a Firebase Storage con gs://
+      Reference ref = FirebaseStorage.instance.refFromURL(gsUrl);
+      await ref.writeToFile(file);
       return file.path;
     } catch (e) {
       print('Error al descargar el archivo: $e');
@@ -172,7 +176,7 @@ class _TabInformationState extends State<TabInformation>
     }
   }
 
-  Widget _buildFilePreview(String fileUrl) {
+ Widget _buildFilePreview(String fileUrl) {
     // Aquí puedes verificar la extensión del archivo y decidir cómo mostrarlo
     if (fileUrl.endsWith('.png') ||
         fileUrl.endsWith('.jpg') ||
@@ -201,9 +205,7 @@ class _TabInformationState extends State<TabInformation>
   }
 
   // Método para construir una lista de botones de chat
-  List<Widget> _buildChatButtons() {
-    return chatImages.map((imagePath) => _buildChatButton(imagePath)).toList();
-  }
+ 
 
   // Método para construir un botón de chat
   Widget _buildChatButton(String imagePath) {
@@ -236,4 +238,58 @@ class _TabInformationState extends State<TabInformation>
       body: _buildContent(),
     );
   }
+Widget _buildUserList() {
+  return StreamBuilder(
+    stream: _chatService.getUsersStream(),
+    builder: (context, snapshot) {
+      // Error
+      if (snapshot.hasError) {
+        return const Text('Error al cargar los datos');
+      }
+
+      // Loading
+      if (snapshot.connectionState == ConnectionState.waiting) {
+        return const Center(child: CircularProgressIndicator());
+      }
+
+      // Obtener el ID del usuario actual
+      final String currentUserID = _auth.currentUser!.uid;
+
+      // Filtrar los usuarios para excluir al usuario actual
+      final List<Map<String, dynamic>> filteredUsers = snapshot.data!
+          .where((userData) => userData['id'] != currentUserID)
+          .toList();
+
+      // Si no hay usuarios después de filtrar
+      if (filteredUsers.isEmpty) {
+        return const Center(child: Text('No hay usuarios disponibles'));
+      }
+
+      // Retornar la lista de usuarios, excluyendo al usuario actual
+      return ListView(
+        children: filteredUsers
+            .map<Widget>((userData) => _buildUserListItem(userData, context))
+            .toList(),
+      );
+    },
+  );
 }
+
+  Widget _buildUserListItem(Map<String, dynamic> userData, BuildContext context){
+    //display all users except the current user
+    return UserTile(
+      text: userData['name'],
+      profilePictureUrl: userData['profile_picture'],
+      onTap: (){
+        //navigate to chat screen
+        Navigator.push(context, MaterialPageRoute(builder: (context) => ScreenChat(
+          receiverEmail: userData['name'],
+          receiverID: userData['id'],
+        ),
+        ),
+        );
+      },
+    );
+  }
+}
+
