@@ -3,23 +3,18 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_application_1/animations/animation_entry.dart';
 import 'package:flutter_application_1/screens/screen_login.dart';
-import 'package:flutter_application_1/screens/screen_home.dart';
 import 'package:flutter_application_1/services/firebase_api.dart';
 import 'firebase_options.dart';
 
+final navigatorKey = GlobalKey<NavigatorState>();
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  try {
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
-    await FirebaseApi().initNotifications();
-  } catch (e) {
-    print('Error al inicializar Firebase: $e');
-  }
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  await FirebaseApi().initNotifications();
   runApp(const MyApp());
 }
-
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
