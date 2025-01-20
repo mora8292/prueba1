@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/screens/screen_profile.dart';
+import 'package:flutter_application_1/screens/screen_settings.dart';
 import 'package:flutter_application_1/services/firebase_service.dart';
+import 'package:flutter_application_1/tabs/tab_class.dart';
 import 'package:flutter_application_1/tabs/tab_information.dart';
 import 'package:flutter_application_1/tabs/tab_news.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -50,7 +53,7 @@ class _ScreenHomeState extends State<ScreenHome> {
       return [
         const TabInformation(),
         const TabNews(),
-        const Center(child: Text('Bicicleta')),
+        const TabClass(),
       ];
     }
   }
@@ -78,9 +81,14 @@ class _ScreenHomeState extends State<ScreenHome> {
         title: const Text('CBapp'),
         actions: [
           IconButton(onPressed: () {}, icon: const Icon(Icons.search)),
-          IconButton(onPressed: () {}, icon: const Icon(Icons.notifications_none_outlined)),
-          IconButton(onPressed: _signOut, icon: const Icon(Icons.settings)),
+          IconButton(onPressed: () {} , icon: const Icon(Icons.notifications_none_outlined)),
         ],
+      ),
+      drawer: ScreenSettings(
+        onProfileTap: () {
+          Navigator.push(context, MaterialPageRoute(builder: (context) => const ScreenProfile()));
+        },
+        onSingOut: _signOut,
       ),
       body: _widgetOptions.isNotEmpty
           ? Center(child: _widgetOptions.elementAt(_selectedIndex))

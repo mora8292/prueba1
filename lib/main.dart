@@ -4,16 +4,28 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_application_1/animations/animation_entry.dart';
 import 'package:flutter_application_1/screens/screen_login.dart';
 import 'package:flutter_application_1/services/firebase_api.dart';
+import 'package:flutter_application_1/services/storage/storage_service.dart';
+import 'package:provider/provider.dart';
 import 'firebase_options.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+try {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  await FirebaseApi().initNotifications();
-  runApp(const MyApp());
+} catch (e) {
+  print('Error inicializando Firebase: $e');
+}
+
+  //await FirebaseApi().initNotifications();
+  runApp( 
+    ChangeNotifierProvider(
+      create: (context)=> StorageService(),
+      child: const MyApp(),
+      )
+    );
 }
 
 class MyApp extends StatelessWidget {

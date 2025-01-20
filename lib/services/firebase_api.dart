@@ -6,20 +6,25 @@ class FirebaseApi{
   final _firebaseMessaging = FirebaseMessaging.instance;
 
   //function to initialize notifications
-  Future<void> initNotifications() async {
-    //request permission from user (will prompt user)
-    await _firebaseMessaging.requestPermission();
+Future<void> initNotifications() async {
+  /*
+  await _firebaseMessaging.requestPermission();
 
-    //fetch the FCM token for this device
+  try {
     final fCMToken = await _firebaseMessaging.getToken();
-
-    //print the token (normally you would send this to your server)
-    print('FCM Token: $fCMToken');
-
-    //initialize further settings for push noti
-    initPushNotifications();
-    
+    if (fCMToken != null) {
+      print('FCM Token: $fCMToken');
+    } else {
+      print('Failed to get FCM Token.');
+    }
+  } catch (e) {
+    print('Error fetching FCM token: $e');
   }
+
+  initPushNotifications();
+  */
+}
+
 
   //function to handle received messages
   void handleMessages(RemoteMessage? message) {
